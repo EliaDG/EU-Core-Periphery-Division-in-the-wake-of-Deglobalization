@@ -2,8 +2,6 @@
 # INFO ----
 
 # TODO: 
-  #have a look at forward/backward fill method or interpolation (zoo package)
-  #in case: iterative imputations (mice package)
 
 # HEADER ----
 
@@ -37,15 +35,14 @@ road_if_roadsc <- read_excel("../01_input_data/road_if_roadsc.xlsx", sheet = "Sh
 spr_exp_pens <- read_excel("../01_input_data/spr_exp_pens.xlsx", sheet = "Sheet 1", na = ":", skip = 8)
 
 ### from World Bank Data
-wd_wdi <- read_excel("../01_input_data/wd_wdi.xlsx",col_types = c("text", "skip", "text", "skip", "numeric", 
+wdi <- read_excel("../01_input_data/wd_wdi.xlsx",col_types = c("text", "skip", "text", "skip", "numeric", 
                                                                "numeric", "numeric", "numeric", "numeric",
                                                                "numeric", "numeric", "numeric", "numeric",
                                                                "numeric", "numeric", "numeric", "numeric", 
                                                                "numeric", "numeric", "numeric", "numeric", "numeric"), n_max = 621)
-wd_wgi <- read_excel("../01_input_data/wd_wgi.xlsx", col_types = c("text", "skip", "text", "skip", "numeric", "numeric", 
+wgi <- read_excel("../01_input_data/wd_wgi.xlsx", col_types = c("text", "skip", "text", "skip", "numeric", "numeric", 
                                                                 "numeric", "numeric", "numeric", "numeric"), n_max = 594)
-wd_health <- read_excel("../01_input_data/wd_hnps.xlsx", col_types = c("text", "skip", "text", "skip", "numeric", "skip", 
-                                                                       "skip", "numeric", "numeric", "numeric", "numeric"), n_max = 621)
+wd_health <- read_excel("../01_input_data/wd_hnps.xlsx", col_types = c("text", "skip", "text", "skip", "numeric", "numeric", "numeric", "numeric"), n_max = 621)
 
 ## OPENING DATA ----
 exms <- bop_exms6_q %>%
@@ -144,6 +141,7 @@ lprd <- nama_10_lp_ulc %>%
          "year" = 2,
          "wage_pps" = 3)
 
+#lots of missing obserations!
 key_hh <- nasa_10_ki %>%
   slice(2:622) %>%
   select(1:3, seq(3, 9, by = 2)) %>%
@@ -215,19 +213,19 @@ wd_h <- wd_health %>%
   rename("year" = 1,
          "country" = 2,
          "h_exp" = 3,
-         "dom_h_exp" = 4,
-         "n_h_bed" = 5,
-         "rur_pop" = 6,
-         "urb_pop" = 7) %>%
+         "n_h_bed" = 4,
+         "rur_pop" = 5,
+         "urb_pop" = 6) %>%
   arrange(country) %>%
-  select(country, year, h_exp, n_h_bed, rur_pop, urb_pop)
+  select(country, year, h_exp, n_h_bed, rur_pop, urb_pop) %>%
+  filter(country != "Greenland")
 
-wgi <- wd_wgi %>%
+wgi <- wgi %>%
   rename_with(~ c("year", "country", "corpt", "g_effect", "pol_stab", "qual", "rul_law", "voic_acc"), 1:8) %>%
   arrange(country) %>%
   select(country, year, corpt, g_effect, pol_stab, qual, rul_law, voic_acc)
 
-wdi <- wd_wdi %>%
+wdi <- wdi %>%
   rename_with(~ c("year", "country", "pov_ratio", "elect", "army_pers", "DELETE1", "edu_exp_3", "edu_exp_2", "edu_exp_1", "DELETE2", "easy_bussy", "fdi_share", "gdp_gg", "gini", "edu_exp_tot", "infl", "army_exp", "DELETE3", "timexbussy", "share_trade"), 1:20) %>%
   arrange(country) %>%
   select(country, year, pov_ratio, elect, army_pers, -DELETE1, edu_exp_3, edu_exp_2, edu_exp_1, -DELETE2, easy_bussy, fdi_share, gdp_gg, gini, edu_exp_tot, infl, army_exp, -DELETE3, timexbussy, share_trade)
@@ -237,27 +235,12 @@ data2 <- list(wdi, wgi, wd_h)
 ## MERGING ----
 macro_data_eurostat <- Reduce(function(x, y) merge(x, y, by = c("country", "year"), all = TRUE), data1)
 macro_data_worldata <- Reduce(function(x, y) merge(x, y, by = c("country", "year"), all = TRUE), data2)
-
-  #necessary step because of the different database of origin
-macro_data_worldata$country[macro_data_worldata$country == "Slovak Republic"] <- "Slovakia"
-
 macro_data <- merge(macro_data_eurostat, macro_data_worldata, by = c("country", "year"), all = TRUE)
 
-  #inspect structure of data-frame
-glimpse(macro_data)
-unique_countries <- unique(macro_data$country)
-unique_countries
-length(unique_countries)
-
-# DROP NOT RELEVANT COLUMNS ----
-macro_data_skinny <- macro_data %>%
-  select(-net_gerd, -elect, -anrc_hicp, -net_pens, -ass_emp_pp)
-
 ## MISSING OBSERVATIONS ----
-na.share(macro_data_clean)
-macro_data_clean <- drop_na_columns(macro_data, 0.23)
+na_share(macro_data)
 
-## CORRELATION ----
 
 # SAVING NEW DATA ----
 #write.csv(macro_data_clean, "../02_intermediary_data/macro_data.csv", row.names = FALSE)
+
