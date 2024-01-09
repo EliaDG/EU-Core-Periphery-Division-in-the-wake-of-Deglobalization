@@ -250,14 +250,12 @@ unique_countries
 length(unique_countries)
 
 # DROP NOT RELEVANT COLUMNS ----
-macro_data_skinny <- macro_data %>%
+macro_data <- macro_data %>%
   select(-net_gerd, -elect, -anrc_hicp, -net_pens, -ass_emp_pp)
 
 ## MISSING OBSERVATIONS ----
-na.share(macro_data_clean)
 macro_data_clean <- drop_na_columns(macro_data, 0.23)
-
-## CORRELATION ----
+na.share(macro_data_clean)
 
 # SAVING NEW DATA ----
-#write.csv(macro_data_clean, "../02_intermediary_data/macro_data.csv", row.names = FALSE)
+write.csv(macro_data_clean, "../02_intermediary_data/macro_data.csv", row.names = FALSE)
