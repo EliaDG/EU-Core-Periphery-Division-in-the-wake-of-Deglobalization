@@ -1,6 +1,6 @@
 
 # Necessary packages:
-install.packages("factoextra")
+install.packages("BiocManager")
 
 library(pacman)
 
@@ -15,5 +15,9 @@ p_load("readxl",
        "caret",
        "stats",
        "factoextra",
-       "VIM"
+       "VIM",
+       "NbClust",
+       "ggiraph",
+       "ggiraphExtra",
+       "doBy"
        )
