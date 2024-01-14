@@ -27,7 +27,6 @@ table_1 <- table_wider %>%
                          "European Union",
                          "North America",
                          "OECD members",
-                         "Japan",
                          "Middle income",
                          "Central Europe and the Baltics",
                          "South America & Caribbean",
@@ -93,9 +92,9 @@ table_4b <- table_wider %>%
   mutate_at(vars(2), ~ round(., 2))
 
 table_4 <- merge(table_4a, table_4b, by = "Country", all = TRUE)
-richer <- table_4 %>%
-  filter(`GDP Per Capita, EU-27=100 in 2022` - `GDP Per Capita, EU-27=100 in 2016` > 0) %>%
-  select(Country)
+#richer <- table_4 %>%
+#  filter(`GDP Per Capita, EU-27=100 in 2022` - `GDP Per Capita, EU-27=100 in 2016` > 0) %>%
+#  select(Country)
 
 # VISUALS ----
 ## Long format ----
@@ -117,9 +116,8 @@ table_4_long <- table_4 %>%
 order <- table_4$Country[order(-table_4$`GDP Per Capita, EU-27=100 in 2016`)]
 table_4_long$Country <- factor(table_4_long$Country, levels = order)
 
-glimpse(table_4)
 ## Plots ----
-ggplot(table_1_long, aes(x = Year, y = GDP_growth_rate, color = Country)) +
+plot_1 <- ggplot(table_1_long, aes(x = Year, y = GDP_growth_rate, color = Country)) +
   geom_line(size = 1) +
   labs(title = "GDP Growth Rates 2015-2022",
        x = "Year",
@@ -127,37 +125,37 @@ ggplot(table_1_long, aes(x = Year, y = GDP_growth_rate, color = Country)) +
        color = "Country")+
   theme(
     legend.position = "bottom",
-    legend.box = "horizontal")
+    legend.box = "horizontal") +
+  scale_x_continuous(breaks = seq(2015, 2022, by = 1))
 
-ggplot(table_2_long, aes(x = Year, y = FDI_share_GDP, fill = Country)) +
+plot_2 <- ggplot(table_2_long, aes(x = Year, y = FDI_share_GDP, fill = Country)) +
   geom_bar(stat = "identity", position = "dodge") +
-  labs(title = "FDI Share of GDP 1990-2022",
+  labs(title = "FDI Inflow as Share of GDP 1990-2022",
        x = "Year",
-       y = "FDI Share of GDP",
+       y = "FDI Share of GDP in %",
        fill = "Country") +
   theme(legend.position = "bottom",
         legend.box = "horizontal") +
   scale_x_continuous(breaks = seq(1990, 2022, by = 8))
 
-ggplot(table_3_long, aes(x = Year, y = FDI_share_GDP, fill = Country)) +
+plot_3 <- ggplot(table_3_long, aes(x = Year, y = FDI_share_GDP, fill = Country)) +
   geom_bar(stat = "identity", position = "dodge") +
   labs(title = "FDI Share of GDP - BRICS",
        x = "Year",
-       y = "FDI Share of GDP",
+       y = "FDI Share of GDP in %",
        fill = "Country") +
   theme(legend.position = "bottom",
         legend.box = "horizontal") +
   scale_x_continuous(breaks = seq(1990, 2022, by = 8))
 
-ggplot(table_4_long, aes(x = Country, y = Value, fill = Indicator)) +
-  geom_bar(stat = "identity", position = "dodge", color = "black") +
+plot_4 <- ggplot(table_4_long, aes(x = Country, y = Value, fill = Indicator)) +
+  geom_bar(stat = "identity", position = "dodge") +
   geom_hline(yintercept = 100, linetype = "dashed", color = "black") +
   labs(title = "GDP Per Capita (EU-27=100)",
        x = "Country",
-       y = "GDP Per Capita",
-       caption = "EU Average GDP") +
-  scale_fill_manual(values = c("GDP Per Capita, EU-27=100 in 2016" = "blue", "GDP Per Capita, EU-27=100 in 2022" = "red"),
+       y = "GDP Per Capita") +
+  scale_fill_manual(values = c("GDP Per Capita, EU-27=100 in 2016" = "blue", "GDP Per Capita, EU-27=100 in 2022" = "yellow"),
                     labels = c("2016" = "Year 2016", "2022" = "Year 2022")) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.position = "bottom") +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1, face = ifelse(table_4_long$Country %in% richer$Country, "bold", "plain")),
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
         legend.position = "bottom")
