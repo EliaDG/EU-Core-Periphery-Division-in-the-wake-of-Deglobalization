@@ -35,7 +35,8 @@ eu_clean <- eu_data %>%
          "unemp",
          "rur_pop",
          "frty") %>% 
-  rename("fdi" = 5,
+  rename("gdp_growth" = 3,
+         "fdi" = 5,
          "trade" = 6,
          "regulatory_quality" = 7,
          "gov_effectiveness" = 8,
@@ -44,6 +45,8 @@ eu_clean <- eu_data %>%
          "rule_law" = 11,
          "control_corruption" = 12,
          "gross_debt" = 13,
+         "share_gerd" = 14,
+         "share_pension" = 15,
          "fertility"= 20)
 
 ### Correlation ----
@@ -54,7 +57,7 @@ high_corr_columns <- findCorrelation(cor_matrix, cutoff = 0.62) #max threshold o
 eu_filtered <- eu_clean[, -c(1,2, high_corr_columns)]
 
 ### Missing values ----
-(colSums(is.na(eu_filtered)) / nrow(eu_filtered)) * 100
+round((colSums(is.na(eu_filtered)) / nrow(eu_filtered)) * 100,2)
 
 eu_imp <- mice(eu_filtered, method = "pmm", m = 5, maxit = 50)
 eu_imputed <- complete(eu_imp)
@@ -101,7 +104,11 @@ fviz_cluster(kmean, data = df2) + ggtitle("K Mean clustering 2000")
 df2$Region <- ifelse(df2$kcluster == 1, "Core", "Periphery")
 ggRadar(df2[,-12], aes(color = Region), rescale = FALSE) + 
   ggtitle("K Means Centers 2000") +
-  theme_bw()
+  theme_bw()+
+  theme(legend.position = "bottom") +
+  scale_color_manual(values = c("Core" = "green", "Periphery" = "red")) +
+  scale_fill_manual(values = c("Core" = "green", "Periphery" = "red")) +
+  scale_y_continuous(breaks = seq(-1,2,by=0.5))
 
 ## KCluster 2011 ----
 #DM16 <- distance <- get_dist(eu_2011); fviz_dist(DM16, gradient = list(low = "#00AFBB", mid = "white", high = "#FC4E07")) + ggtitle("Distance Matrix Year 2016")
@@ -122,7 +129,11 @@ df2$Region <- ifelse(df2$kcluster == 1, "PIIGS",
                             ifelse(df2$kcluster == 3, "Periphery", NA)))
 ggRadar(df2[,-12], aes(color = Region), rescale = FALSE) + 
   ggtitle("K Means Centers 2011") +
-  theme_bw()
+  theme_bw() +
+  theme(legend.position = "bottom") +
+  scale_color_manual(values = c("Core" = "green", "PIIGS" = "blue", "Periphery" = "red")) +
+  scale_fill_manual(values = c("Core" = "green", "PIIGS" = "blue", "Periphery" = "red")) +
+  scale_y_continuous(breaks = seq(-1,2,by=0.5))
 
 ## KCluster 2021 ----
 #DM21 <- distance <- get_dist(eu_2021); fviz_dist(DM21, gradient = list(low = "#00AFBB", mid = "white", high = "#FC4E07")) + ggtitle("Distance Matrix Year 2021")
@@ -139,11 +150,15 @@ df2$kcluster <- kclusters
 fviz_cluster(kmean, data = df2) + ggtitle("K Mean clustering 2021")
 
 df2$Region <- ifelse(df2$kcluster == 1, "Southern Europe", 
-                     ifelse(df2$kcluster == 2, "Core", 
-                            ifelse(df2$kcluster == 3, "CEE", NA)))
+                     ifelse(df2$kcluster == 2, "Periphery", 
+                            ifelse(df2$kcluster == 3, "Core", NA)))
 ggRadar(df2[,-12], aes(color = Region), rescale = FALSE) + 
   ggtitle("K Means Centers 2021") +
-  theme_bw()
+  theme_bw() +
+  theme(legend.position = "bottom") +
+  scale_color_manual(values = c("Core" = "green", "Southern Europe" = "blue", "Periphery" = "red")) +
+  scale_fill_manual(values = c("Core" = "green", "Southern Europe" = "blue", "Periphery" = "red")) +
+  scale_y_continuous(breaks = seq(-1,2,by=0.5))
 
 # APPENDIX ----
 ## Descriptive stats----
