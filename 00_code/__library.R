@@ -1,6 +1,6 @@
 
 # Necessary packages:
-install.packages("BiocManager")
+#install.packages("BiocManager")
 
 library(pacman)
 
