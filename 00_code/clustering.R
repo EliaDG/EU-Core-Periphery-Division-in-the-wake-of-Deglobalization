@@ -8,8 +8,8 @@ set.seed(123)
 
 # READING DATA ----
 #load(url("https://github.com/EliaDG/International-econ-paper/tree/main/02_intermediary_data/macro_data.cvs"))
-#eu_data <- read_csv("../02_intermediary_data/macro_data.csv")
-eu_data <- read_csv("C:/Users/eliad/Desktop/macro_data.csv")
+eu_data <- read_csv("../02_intermediary_data/macro_data.csv")
+
 # CLUSTER ANALYSIS ----
 ## Cleaning: ----
   # Consider just most important features
@@ -100,12 +100,13 @@ df2a = eu_2000
 kmean00 <- kmeans(df1a, centers = 2, nstart = 50); kclusters00 <- kmean00$cluster
 df2a$kcluster <- kclusters00
 fviz_cluster(kmean00, data = df2a, labelsize = 18,palette = c("red", "green")) + ggtitle("K Mean clustering 2000")
+#kruskal.test(unemp ~ kcluster, data = df2a)
 
 df2a$Region <- ifelse(df2a$kcluster == 2, "Core", "Periphery")
 ggRadar(df2a[,-12], aes(color = Region), rescale = FALSE) + 
   ggtitle("K Means Centers 2000") +
   theme_bw()+
-  theme(legend.position = "bottom",
+  theme(legend.position = "right",
         axis.text = element_text(size = 14)) +
   scale_color_manual(values = c("Core" = "green", "Periphery" = "red")) +
   scale_fill_manual(values = c("Core" = "green", "Periphery" = "red")) +
@@ -123,15 +124,15 @@ df2b = eu_2011
 
 kmean11 <- kmeans(df1b, centers = 3, nstart = 50); kclusters11 <- kmean11$cluster
 df2b$kcluster <- kclusters11
-fviz_cluster(kmean11, data = df2b, labelsize = 18, palette = c("blue", "green", "red")) + ggtitle("K Mean clustering 2011")
+fviz_cluster(kmean11, data = df2b, labelsize = 18, palette = c("green", "blue", "red")) + ggtitle("K Mean clustering 2011")
 
-df2b$Region <- ifelse(df2b$kcluster == 1, "PIIGS", 
-                     ifelse(df2b$kcluster == 2, "Core", 
+df2b$Region <- ifelse(df2b$kcluster == 2, "PIIGS", 
+                     ifelse(df2b$kcluster == 1, "Core", 
                             ifelse(df2b$kcluster == 3, "Periphery", NA)))
 ggRadar(df2b[,-12], aes(color = Region), rescale = FALSE) + 
   ggtitle("K Means Centers 2011") +
   theme_bw() +
-  theme(legend.position = "bottom",
+  theme(legend.position = "right",
         axis.text = element_text(size = 14)) +
   scale_color_manual(values = c("Core" = "green", "PIIGS" = "blue", "Periphery" = "red")) +
   scale_fill_manual(values = c("Core" = "green", "PIIGS" = "blue", "Periphery" = "red")) +
@@ -149,15 +150,15 @@ df2c = eu_2021
 
 kmean21 <- kmeans(df1c, centers = 3, nstart = 50); kclusters21 <- kmean21$cluster
 df2c$kcluster <- kclusters21
-fviz_cluster(kmean21, data = df2c, labelsize = 18, palette = c("red","blue", "green")) + ggtitle("K Mean clustering 2021")
+fviz_cluster(kmean21, data = df2c, labelsize = 18, palette = c("green","blue", "red")) + ggtitle("K Mean clustering 2021")
 
 df2c$Region <- ifelse(df2c$kcluster == 2, "Southern Europe", 
-                     ifelse(df2c$kcluster == 1, "Periphery", 
-                            ifelse(df2c$kcluster == 3, "Core", NA)))
+                     ifelse(df2c$kcluster == 3, "Periphery", 
+                            ifelse(df2c$kcluster == 1, "Core", NA)))
 ggRadar(df2c[,-12], aes(color = Region), rescale = FALSE) + 
   ggtitle("K Means Centers 2021") +
   theme_bw() +
-  theme(legend.position = "bottom",
+  theme(legend.position = "right",
         axis.text = element_text(size = 14)) +
   scale_color_manual(values = c("Core" = "green", "Southern Europe" = "blue", "Periphery" = "red")) +
   scale_fill_manual(values = c("Core" = "green", "Southern Europe" = "blue", "Periphery" = "red")) +
@@ -165,12 +166,19 @@ ggRadar(df2c[,-12], aes(color = Region), rescale = FALSE) +
 colnames(eu_clean)
 
 ## Descriptive stats----
-KK_stats <- summaryBy(. ~ kcluster, data = df2_, FUN = "mean")
+KK_stats00 <- summaryBy(. ~ kcluster, data = df2a, FUN = "mean")
+KK_stats11 <- summaryBy(. ~ kcluster, data = df2b, FUN = "mean")
+KK_stats21 <- summaryBy(. ~ kcluster, data = df2c, FUN = "mean")
+
+#EXPLAIN ----
+k00 <- c(2, 2, 1, 1, 1, 1, 2, 1, 2, 2, 2, 1, 1, 2, 1, 1, 1, 2, 2, 2, 1, 1, 1, 1, 1, 2, 2)
+k11 <- c(1, 1, 3, 3, 3, 3, 1, 3, 1, 1, 1, 2, 3, 2, 2, 3, 3, 1, 3, 1, 3, 2, 3, 3, 3, 2, 1)
+k21 <- c(1, 1, 3, 3, 3, 3, 1, 3, 1, 1, 1, 2, 3, 3, 2, 3, 3, 1, 3, 1, 3, 3, 3, 3, 3, 2, 1)
 
 ext_00 <- eu_data %>% 
   select(1:2, 9, 27) %>% 
   filter(year == 2000 & country %in% country_names) %>% 
-  mutate(cluster = kclusters00) %>% 
+  mutate(cluster = k00) %>% 
   group_by(cluster) %>%
   summarize(year = first(year), k_gdp_capita = sum(gdp)*1000000 / sum(pop)) %>% 
   mutate(cluster_label = case_when(
@@ -182,26 +190,26 @@ ext_00 <- eu_data %>%
 ext_11 <- eu_data %>% 
   select(1:2, 9, 27) %>% 
   filter(year == 2011 & country %in% country_names) %>% 
-  mutate(cluster = kclusters11) %>% 
+  mutate(cluster = k11) %>% 
   group_by(cluster) %>%
   summarize(year = first(year), k_gdp_capita = sum(gdp)*1000000 / sum(pop)) %>% 
   mutate(cluster_label = case_when(
     cluster == 1 ~ "Core",
-    cluster == 2 ~ "Periphery",
-    cluster == 3 ~ "Southern Europe",
+    cluster == 3 ~ "Periphery",
+    cluster == 2 ~ "Southern Europe",
     TRUE ~ as.character(cluster)  # Handle any other cluster values
   ))
 
 ext_21 <- eu_data %>% 
   select(1:2, 9, 27) %>% 
   filter(year == 2021 & country %in% country_names) %>% 
-  mutate(cluster = kclusters21) %>%
+  mutate(cluster = k21) %>%
   group_by(cluster) %>%
   summarize(year = first(year), k_gdp_capita = sum(gdp)*1000000 / sum(pop)) %>% 
   mutate(cluster_label = case_when(
-    cluster == 2 ~ "Core",
+    cluster == 1 ~ "Core",
     cluster == 3  ~ "Periphery",
-    cluster == 1 ~ "Southern Europe",
+    cluster == 2 ~ "Southern Europe",
     TRUE ~ as.character(cluster)  # Handle any other cluster values
   ))
 

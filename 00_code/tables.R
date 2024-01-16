@@ -19,28 +19,24 @@ table_wider <- table %>%
 ## Table 1 ----
 #Growth Rates of GDP in Selected Countries (Annual Percentage Change): 2016–22
 table_1 <- table_wider %>%
-  filter(Indicator %in% "GDP growth (annual %) ") %>% 
-  select(c(1, 28:35)) %>%
+  select(1:32) %>% 
+  filter(Indicator %in% "GDP growth (annual %) ") %>%
   rename(Country = "Country Name") %>%
-  mutate_at(vars(2:9), ~ round(., 2)) %>%
-  filter(Country %in% c("High income", 
-                         "European Union",
+  mutate_at(vars(3:32), ~ round(., 2)) %>%
+  filter(Country %in% c("European Union",
                          "North America",
-                         "OECD members",
-                         "Middle income",
                          "Central Europe and the Baltics",
                          "South America & Caribbean",
-                         "Middle East & North Africa",
                          "China",
                          "Low income"
                          ))
-## Table 2/3 ----
+## Table 2 ----
 #Percentage Distribution of FDI by Country or Group of Countries (%): 1990-2022
 table_2 <- table_wider %>%
   filter(Indicator %in% "Foreign direct investment, net inflows (% of GDP) ") %>% 
-  select(c(1, seq(3, 35, by=8))) %>%
+  select(c(1, 13, 19, 28, 35)) %>%
   rename(Country = "Country Name") %>%
-  mutate_at(vars(2:6), ~ round(., 2)) %>%
+  mutate_at(vars(2:5), ~ round(., 2)) %>%
   filter(Country %in% c("High income", 
                         "European Union",
                         "North America",
@@ -49,9 +45,9 @@ table_2 <- table_wider %>%
                         "Central Europe and the Baltics",
                         "South America & Caribbean",
                         "Middle East & North Africa",
-                        "Low income",
+                        #"Low income",
                         "South Asia"))
-
+## Table 3 ----
 table_3 <- table_wider %>%
   filter(Indicator %in% "Foreign direct investment, net inflows (% of GDP) ") %>% 
   select(c(1, seq(3, 35, by=8))) %>%
@@ -96,80 +92,76 @@ table_4 <- merge(table_4a, table_4b, by = "Country", all = TRUE)
 #  filter(`GDP Per Capita, EU-27=100 in 2022` - `GDP Per Capita, EU-27=100 in 2016` > 0) %>%
 #  select(Country)
 
-
-kclusters00 <- c(1, 1, 2, 2, 2, 2, 1, 2, 1, 1, 1, 2, 2, 1, 2, 2, 2, 1, 1, 1, 2, 2, 2, 2, 2, 2, 1)
-kclusters11 <- c(3, 3, 1, 1, 1, 1, 3, 1, 3, 3, 3, 2, 1, 2, 2, 1, 1, 3, 1 ,3, 1, 2, 1, 1, 1, 2, 3)
-kclusters21 <- c(3, 3, 2, 2, 2, 2, 3, 2, 3, 3, 3, 1, 2, 3, 1, 2, 2, 3, 2, 3, 2, 1, 2, 2, 2, 1, 3)
+## Table klusters ----
+k00 <- c(2, 2, 1, 1, 1, 1, 2, 1, 2, 2, 2, 1, 1, 2, 1, 1, 1, 2, 2, 2, 1, 1, 1, 1, 1, 2, 2)
+k11 <- c(1, 1, 3, 3, 3, 3, 1, 3, 1, 1, 1, 2, 3, 2, 2, 3, 3, 1, 3, 1, 3, 2, 3, 3, 3, 2, 1)
+k21 <- c(1, 1, 3, 3, 3, 3, 1, 3, 1, 1, 1, 2, 3, 3, 2, 3, 3, 1, 3, 1, 3, 3, 3, 3, 3, 2, 1)
 
 table_2021a <- table_wider %>%
-  filter(Indicator %in% c("Foreign direct investment, net inflows (% of GDP) ", 
-                          "Foreign direct investment, net outflows (% of GDP) ", 
+  filter(Indicator %in% c("Foreign direct investment, net inflows (% of GDP) ",
                           "GDP (current US$) ")) %>%
   rename(Country = "Country Name") %>%
   filter(Country %in% eu_countries) %>%
   select(1,2,35) %>%
   pivot_wider(names_from = 2, values_from = 3) %>%
   arrange(Country) %>% 
-  mutate(cluster = kclusters21) %>% 
+  mutate(cluster = k21) %>% 
   group_by(cluster) %>%
-  summarize(total_fdi_in = sum(`Foreign direct investment, net inflows (% of GDP) ` * `GDP (current US$) `, na.rm = TRUE)/sum(`GDP (current US$) `)) %>%
-  mutate(cluster_label = case_when(
-    cluster == 3 ~ "Core",
-    cluster == 2  ~ "Periphery",
-    cluster == 1 ~ "Southern Europe",
-    TRUE ~ as.character(cluster)  # Handle any other cluster values
+  summarize(Cluster_FDI_IN = sum(`Foreign direct investment, net inflows (% of GDP) ` * `GDP (current US$) `, na.rm = TRUE)/sum(`GDP (current US$) `)) %>%
+  mutate(Group = case_when(
+    cluster == 1 ~ "Core",
+    cluster == 3  ~ "Periphery",
+    cluster == 2 ~ "Southern Europe",
+    TRUE ~ as.character(cluster)
   )) %>% 
-  arrange(cluster_label) %>% 
+  arrange(Group) %>% 
   mutate(year = 2021) %>% 
   select(-"cluster")
 
 table_2011a <- table_wider %>%
-  filter(Indicator %in% c("Foreign direct investment, net inflows (% of GDP) ", 
-                          "Foreign direct investment, net outflows (% of GDP) ", 
+  filter(Indicator %in% c("Foreign direct investment, net inflows (% of GDP) ",
                           "GDP (current US$) ")) %>%
   rename(Country = "Country Name") %>%
   filter(Country %in% eu_countries) %>%
   select(1,2,24) %>%
   pivot_wider(names_from = 2, values_from = 3) %>%
   arrange(Country) %>% 
-  mutate(cluster = kclusters11) %>% 
+  mutate(cluster = k11) %>% 
   group_by(cluster) %>%
-  summarize(total_fdi_in = sum(`Foreign direct investment, net inflows (% of GDP) ` * `GDP (current US$) `, na.rm = TRUE)/sum(`GDP (current US$) `)) %>%
-  mutate(cluster_label = case_when(
-    cluster == 3 ~ "Core",
-    cluster == 1  ~ "Periphery",
+  summarize(Cluster_FDI_IN = sum(`Foreign direct investment, net inflows (% of GDP) ` * `GDP (current US$) `, na.rm = TRUE)/sum(`GDP (current US$) `)) %>%
+  mutate(Group = case_when(
+    cluster == 1 ~ "Core",
+    cluster == 3  ~ "Periphery",
     cluster == 2 ~ "Southern Europe",
-    TRUE ~ as.character(cluster)  # Handle any other cluster values
+    TRUE ~ as.character(cluster)
   )) %>% 
-  arrange(cluster_label) %>% 
+  arrange(Group) %>% 
   mutate(year = 2011)%>% 
   select(-"cluster")
 
 
 table_2000a <- table_wider %>%
-  filter(Indicator %in% c("Foreign direct investment, net inflows (% of GDP) ", 
-                          "Foreign direct investment, net outflows (% of GDP) ", 
+  filter(Indicator %in% c("Foreign direct investment, net inflows (% of GDP) ",
                           "GDP (current US$) ")) %>%
   rename(Country = "Country Name") %>%
   filter(Country %in% eu_countries) %>%
   select(1,2,13) %>%
   pivot_wider(names_from = 2, values_from = 3) %>%
   arrange(Country) %>% 
-  mutate(cluster = kclusters00) %>% 
+  mutate(cluster = k00) %>% 
   group_by(cluster) %>%
-  summarize(total_fdi_in = sum(`Foreign direct investment, net inflows (% of GDP) ` * `GDP (current US$) `, na.rm = TRUE)/sum(`GDP (current US$) `)) %>%
-  mutate(cluster_label = case_when(
+  summarize(Cluster_FDI_IN = sum(`Foreign direct investment, net inflows (% of GDP) ` * `GDP (current US$) `, na.rm = TRUE)/sum(`GDP (current US$) `)) %>%
+  mutate(Group = case_when(
     cluster == 1 ~ "Core",
     cluster == 2  ~ "Periphery",
-    TRUE ~ as.character(cluster)  # Handle any other cluster values
+    TRUE ~ as.character(cluster)
   )) %>% 
-  arrange(cluster_label) %>% 
+  arrange(Group) %>% 
   mutate(year = 2000)%>% 
   select(-"cluster")
 
 table_2021b <- table_wider %>%
-  filter(Indicator %in% c("Foreign direct investment, net inflows (% of GDP) ", 
-                          "Foreign direct investment, net outflows (% of GDP) ", 
+  filter(Indicator %in% c("Foreign direct investment, net outflows (% of GDP) ", 
                           "GDP (current US$) ")) %>%
   rename(Country = "Country Name") %>%
   filter(Country %in% eu_countries) %>%
@@ -178,57 +170,55 @@ table_2021b <- table_wider %>%
   arrange(Country) %>% 
   mutate(cluster = kclusters21) %>% 
   group_by(cluster) %>%
-  summarize(total_fdi_out = sum(`Foreign direct investment, net outflows (% of GDP) ` * `GDP (current US$) `, na.rm = TRUE)/sum(`GDP (current US$) `)) %>%
-  mutate(cluster_label = case_when(
-    cluster == 3 ~ "Core",
-    cluster == 2  ~ "Periphery",
-    cluster == 1 ~ "Southern Europe",
-    TRUE ~ as.character(cluster)  # Handle any other cluster values
+  summarize(Cluster_FDI_OUT = sum(`Foreign direct investment, net outflows (% of GDP) ` * `GDP (current US$) `, na.rm = TRUE)/sum(`GDP (current US$) `)) %>%
+  mutate(Group = case_when(
+    cluster == 1 ~ "Core",
+    cluster == 3  ~ "Periphery",
+    cluster == 2 ~ "Southern Europe",
+    TRUE ~ as.character(cluster)
   )) %>% 
-  arrange(cluster_label) %>% 
+  arrange(Group) %>% 
   mutate(year = 2021)%>% 
   select(-"cluster")
 
 table_2011b <- table_wider %>%
-  filter(Indicator %in% c("Foreign direct investment, net inflows (% of GDP) ", 
-                          "Foreign direct investment, net outflows (% of GDP) ", 
+  filter(Indicator %in% c("Foreign direct investment, net outflows (% of GDP) ", 
                           "GDP (current US$) ")) %>%
   rename(Country = "Country Name") %>%
   filter(Country %in% eu_countries) %>%
   select(1,2,24) %>%
   pivot_wider(names_from = 2, values_from = 3) %>%
   arrange(Country) %>% 
-  mutate(cluster = kclusters11) %>% 
+  mutate(cluster = k11) %>% 
   group_by(cluster) %>%
-  summarize(total_fdi_out = sum(`Foreign direct investment, net outflows (% of GDP) ` * `GDP (current US$) `, na.rm = TRUE)/sum(`GDP (current US$) `)) %>%
-  mutate(cluster_label = case_when(
-    cluster == 3 ~ "Core",
-    cluster == 1  ~ "Periphery",
+  summarize(Cluster_FDI_OUT = sum(`Foreign direct investment, net outflows (% of GDP) ` * `GDP (current US$) `, na.rm = TRUE)/sum(`GDP (current US$) `)) %>%
+  mutate(Group = case_when(
+    cluster == 1 ~ "Core",
+    cluster == 3  ~ "Periphery",
     cluster == 2 ~ "Southern Europe",
-    TRUE ~ as.character(cluster)  # Handle any other cluster values
+    TRUE ~ as.character(cluster)
   )) %>% 
-  arrange(cluster_label) %>% 
+  arrange(Group) %>% 
   mutate(year = 2011)%>% 
   select(-"cluster")
 
 table_2000b <- table_wider %>%
-  filter(Indicator %in% c("Foreign direct investment, net inflows (% of GDP) ", 
-                          "Foreign direct investment, net outflows (% of GDP) ", 
+  filter(Indicator %in% c("Foreign direct investment, net outflows (% of GDP) ", 
                           "GDP (current US$) ")) %>%
   rename(Country = "Country Name") %>%
   filter(Country %in% eu_countries) %>%
   select(1,2,13) %>%
   pivot_wider(names_from = 2, values_from = 3) %>%
   arrange(Country) %>% 
-  mutate(cluster = kclusters00) %>% 
+  mutate(cluster = k00) %>% 
   group_by(cluster) %>%
-  summarize(total_fdi_out = sum(`Foreign direct investment, net outflows (% of GDP) ` * `GDP (current US$) `, na.rm = TRUE)/sum(`GDP (current US$) `)) %>%
-  mutate(cluster_label = case_when(
+  summarize(Cluster_FDI_OUT = sum(`Foreign direct investment, net outflows (% of GDP) ` * `GDP (current US$) `, na.rm = TRUE)/sum(`GDP (current US$) `)) %>%
+  mutate(Group = case_when(
     cluster == 1 ~ "Core",
     cluster == 2  ~ "Periphery",
-    TRUE ~ as.character(cluster)  # Handle any other cluster values
+    TRUE ~ as.character(cluster) 
   )) %>% 
-  arrange(cluster_label) %>% 
+  arrange(Group) %>% 
   mutate(year = 2000)%>% 
   select(-"cluster")
 
@@ -237,9 +227,75 @@ fdi_in <- bind_rows(table_2000a, table_2011a, table_2021a) %>%
 fdi_out <- bind_rows(table_2000b, table_2011b, table_2021b) %>%
   arrange(year)
 
+table00 <- table_wider %>%
+  filter(Indicator %in% c("Trade (% of GDP) ", 
+                          "GDP (current US$) ")) %>%
+  rename(Country = "Country Name") %>%
+  filter(Country %in% eu_countries) %>%
+  select(1,2,13) %>%
+  pivot_wider(names_from = 2, values_from = 3) %>%
+  arrange(Country) %>% 
+  mutate(cluster = k00) %>% 
+  group_by(cluster) %>%
+  summarize(Cluster_Trade = sum(`Trade (% of GDP) ` * `GDP (current US$) `, na.rm = TRUE)/sum(`GDP (current US$) `)) %>%
+  mutate(Group = case_when(
+    cluster == 1 ~ "Core",
+    cluster == 2  ~ "Periphery",
+    TRUE ~ as.character(cluster)
+  )) %>% 
+  arrange(Group) %>% 
+  mutate(year = 2000)%>% 
+  select(-"cluster")
+
+table11 <- table_wider %>%
+  filter(Indicator %in% c("Trade (% of GDP) ", 
+                          "GDP (current US$) ")) %>%
+  rename(Country = "Country Name") %>%
+  filter(Country %in% eu_countries) %>%
+  select(1,2,24) %>%
+  pivot_wider(names_from = 2, values_from = 3) %>%
+  arrange(Country) %>% 
+  mutate(cluster = k11) %>% 
+  group_by(cluster) %>%
+  summarize(Cluster_Trade = sum(`Trade (% of GDP) ` * `GDP (current US$) `, na.rm = TRUE)/sum(`GDP (current US$) `)) %>%
+  mutate(Group = case_when(
+    cluster == 1 ~ "Core",
+    cluster == 3  ~ "Periphery",
+    cluster == 2 ~ "Southern Europe",
+    TRUE ~ as.character(cluster)
+  )) %>% 
+  arrange(Group) %>% 
+  mutate(year = 2011)%>% 
+  select(-"cluster")
+
+table21 <- table_wider %>%
+  filter(Indicator %in% c("Trade (% of GDP) ", 
+                          "GDP (current US$) ")) %>%
+  rename(Country = "Country Name") %>%
+  filter(Country %in% eu_countries) %>%
+  select(1,2,35) %>%
+  pivot_wider(names_from = 2, values_from = 3) %>%
+  arrange(Country) %>% 
+  mutate(cluster = k21) %>% 
+  group_by(cluster) %>%
+  summarize(Cluster_Trade = sum(`Trade (% of GDP) ` * `GDP (current US$) `, na.rm = TRUE)/sum(`GDP (current US$) `)) %>%
+  mutate(Group = case_when(
+    cluster == 1 ~ "Core",
+    cluster == 3  ~ "Periphery",
+    cluster == 2 ~ "Southern Europe",
+    TRUE ~ as.character(cluster)
+  )) %>% 
+  arrange(Group) %>% 
+  mutate(year = 2021)%>% 
+  select(-"cluster")
+
+trade <- bind_rows(table00, table11, table21) %>%
+  arrange(year)
+
 # VISUALS ----
 ## Long format ----
 table_1_long <- table_1 %>%
+  select(-Indicator) %>% 
   gather(key = "Year", value = "GDP_growth_rate", -Country) %>%
   mutate(Year = as.numeric(substr(Year, 1, 4)))
 
@@ -260,24 +316,24 @@ table_4_long$Country <- factor(table_4_long$Country, levels = order)
 ## Plots ----
 plot_1 <- ggplot(table_1_long, aes(x = Year, y = GDP_growth_rate, color = Country)) +
   geom_line(size = 1) +
-  labs(title = "GDP Growth Rates 2015-2022",
+  labs(title = "GDP Growth Rates 1990-2019",
        x = "Year",
        y = "GDP Growth Rate (%)",
        color = "Country")+
   theme(
     legend.position = "bottom",
     legend.box = "horizontal") +
-  scale_x_continuous(breaks = seq(2015, 2022, by = 1))
+  scale_x_continuous(breaks = 1990:2019)
 
 plot_2 <- ggplot(table_2_long, aes(x = Year, y = FDI_share_GDP, fill = Country)) +
   geom_bar(stat = "identity", position = "dodge") +
-  labs(title = "FDI Inflow as Share of GDP 1990-2022",
+  labs(title = "FDI Inflow as Share of GDP 2000-2022",
        x = "Year",
-       y = "FDI Share of GDP in %",
+       y = "% of GDP",
        fill = "Country") +
   theme(legend.position = "bottom",
         legend.box = "horizontal") +
-  scale_x_continuous(breaks = seq(1990, 2022, by = 8))
+  scale_x_continuous(breaks = c(2000,2006,2015,2022))
 
 plot_3 <- ggplot(table_3_long, aes(x = Year, y = FDI_share_GDP, fill = Country)) +
   geom_bar(stat = "identity", position = "dodge") +
@@ -301,18 +357,27 @@ plot_4 <- ggplot(table_4_long, aes(x = Country, y = Value, fill = Indicator)) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1),
         legend.position = "bottom")
 
-plot_5 <- ggplot(fdi_in, aes(x = cluster_label, y = total_fdi_in, fill = factor(year))) +
+plot_5 <- ggplot(fdi_in, aes(x = Group, y = Cluster_FDI_IN, fill = factor(year))) +
   geom_bar(stat = "identity", position = "dodge") +
-  labs(title = "FDI Inflow as % GDP of cluster",
+  labs(title = "FDI Inflow as % GDP by cluster",
        x = "Cluster",
        y = "% GDP",
        fill = "Year") +
   scale_fill_manual(values = c("2000" = "lightblue", "2011" = "lightgreen", "2021" = "lightcoral")) +
   theme_minimal()
 
-plot_6 <- ggplot(fdi_out, aes(x = cluster_label, y = total_fdi_out, fill = factor(year))) +
+plot_6 <- ggplot(fdi_out, aes(x = Group, y = Cluster_FDI_OUT, fill = factor(year))) +
   geom_bar(stat = "identity", position = "dodge") +
-  labs(title = "FDI Outflow as % GDP of cluster",
+  labs(title = "FDI Outflow as % GDP by cluster",
+       x = "Cluster",
+       y = "% GDP",
+       fill = "Year") +
+  scale_fill_manual(values = c("2000" = "lightblue", "2011" = "lightgreen", "2021" = "lightcoral")) +
+  theme_minimal()
+
+plot_7 <- ggplot(trade, aes(x = Group, y = Cluster_Trade, fill = factor(year))) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(title = "Trade as % GDP by cluster",
        x = "Cluster",
        y = "% GDP",
        fill = "Year") +
