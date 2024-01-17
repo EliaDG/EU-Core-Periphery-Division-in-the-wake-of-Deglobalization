@@ -4,10 +4,8 @@
 # CONTIGENCIES ----
 source("../00_code/__library.R")
 source("../00_code/__functions.R")
-set.seed(123)
 
 # READING DATA ----
-#load(url("https://github.com/EliaDG/International-econ-paper/tree/main/02_intermediary_data/macro_data.cvs"))
 eu_data <- read_csv("../02_intermediary_data/macro_data.csv")
 
 # CLUSTER ANALYSIS ----
@@ -88,10 +86,7 @@ eu_2021 <- eu_final %>%
   `rownames<-`(., country_names)
 
 ## KCluster 2000 ----
-#DM00 <- get_dist(eu_2000); fviz_dist(DM00, gradient = list(low = "#00AFBB", mid = "white", high = "#FC4E07")) + ggtitle("Distance Matrix Year 2000")
-fviz_nbclust(eu_2000, kmeans, method = "wss")
-fviz_nbclust(eu_2000, kmeans, method = "silhouette")
-gap_stat <- clusGap(eu_2000, FUN = kmeans, nstart = 25, K.max = 10, B = 50) ;fviz_gap_stat(gap_stat)
+DM00 <- get_dist(eu_2000); fviz_dist(DM00, gradient = list(low = "#00AFBB", mid = "white", high = "#FC4E07")) + ggtitle("Distance Matrix Year 2000")
 opt_K <- NbClust(eu_2000, method = "kmeans", max.nc = 10)
 
 df1a = eu_2000
@@ -113,10 +108,7 @@ ggRadar(df2a[,-12], aes(color = Region), rescale = FALSE) +
   scale_y_continuous(breaks = seq(-1,2,by=0.5))
 
 ## KCluster 2011 ----
-#DM16 <- distance <- get_dist(eu_2011); fviz_dist(DM16, gradient = list(low = "#00AFBB", mid = "white", high = "#FC4E07")) + ggtitle("Distance Matrix Year 2016")
-fviz_nbclust(eu_2011, kmeans, method = "wss")
-fviz_nbclust(eu_2011, kmeans, method = "silhouette")
-gap_stat <- clusGap(eu_2011, FUN = kmeans, nstart = 25, K.max = 10, B = 50) ;fviz_gap_stat(gap_stat)
+DM11 <- distance <- get_dist(eu_2011); fviz_dist(DM16, gradient = list(low = "#00AFBB", mid = "white", high = "#FC4E07")) + ggtitle("Distance Matrix Year 2016")
 optK <- NbClust(eu_2011, method = "kmeans", max.nc = 10)
 
 df1b = eu_2011
@@ -139,10 +131,7 @@ ggRadar(df2b[,-12], aes(color = Region), rescale = FALSE) +
   scale_y_continuous(breaks = seq(-1,2,by=0.5))
 
 ## KCluster 2021 ----
-#DM21 <- distance <- get_dist(eu_2021); fviz_dist(DM21, gradient = list(low = "#00AFBB", mid = "white", high = "#FC4E07")) + ggtitle("Distance Matrix Year 2021")
-fviz_nbclust(eu_2021, kmeans, method = "wss")
-fviz_nbclust(eu_2021, kmeans, method = "silhouette")
-gap_stat <- clusGap(eu_2021, FUN = kmeans, nstart = 25, K.max = 10, B = 50) ;fviz_gap_stat(gap_stat) # Everything else says 3
+DM21 <- distance <- get_dist(eu_2021); fviz_dist(DM21, gradient = list(low = "#00AFBB", mid = "white", high = "#FC4E07")) + ggtitle("Distance Matrix Year 2021")
 opt_K <- NbClust(eu_2021, method = "kmeans", max.nc = 10)
 
 df1c = eu_2021
@@ -170,12 +159,13 @@ KK_stats00 <- summaryBy(. ~ kcluster, data = df2a, FUN = "mean")
 KK_stats11 <- summaryBy(. ~ kcluster, data = df2b, FUN = "mean")
 KK_stats21 <- summaryBy(. ~ kcluster, data = df2c, FUN = "mean")
 
-#EXPLAIN ----
-k00 <- c(2, 2, 1, 1, 1, 1, 2, 1, 2, 2, 2, 1, 1, 2, 1, 1, 1, 2, 2, 2, 1, 1, 1, 1, 1, 2, 2)
-k11 <- c(1, 1, 3, 3, 3, 3, 1, 3, 1, 1, 1, 2, 3, 2, 2, 3, 3, 1, 3, 1, 3, 2, 3, 3, 3, 2, 1)
+# GDP per Capita by Cluster ----
+#as the cluster numbering assignment is always different I saved it for reproducibility
+#k00 <- c(2, 2, 1, 1, 1, 1, 2, 1, 2, 2, 2, 1, 1, 2, 1, 1, 1, 2, 2, 2, 1, 1, 1, 1, 1, 1, 2)
+#k11 <- c(1, 1, 3, 3, 3, 3, 1, 3, 1, 1, 1, 2, 3, 2, 2, 3, 3, 1, 3, 1, 3, 2, 3, 3, 3, 2, 1)
 k21 <- c(1, 1, 3, 3, 3, 3, 1, 3, 1, 1, 1, 2, 3, 3, 2, 3, 3, 1, 3, 1, 3, 3, 3, 3, 3, 2, 1)
 
-ext_00 <- eu_data %>% 
+'ext_00 <- eu_data %>% 
   select(1:2, 9, 27) %>% 
   filter(year == 2000 & country %in% country_names) %>% 
   mutate(cluster = k00) %>% 
@@ -184,7 +174,7 @@ ext_00 <- eu_data %>%
   mutate(cluster_label = case_when(
     cluster == 1 ~ "Core",
     cluster == 2 ~ "Periphery",
-    TRUE ~ as.character(cluster)  # Handle any other cluster values
+    TRUE ~ as.character(cluster)
   ))
 
 ext_11 <- eu_data %>% 
@@ -197,8 +187,8 @@ ext_11 <- eu_data %>%
     cluster == 1 ~ "Core",
     cluster == 3 ~ "Periphery",
     cluster == 2 ~ "Southern Europe",
-    TRUE ~ as.character(cluster)  # Handle any other cluster values
-  ))
+    TRUE ~ as.character(cluster)
+  ))'
 
 ext_21 <- eu_data %>% 
   select(1:2, 9, 27) %>% 
@@ -210,18 +200,16 @@ ext_21 <- eu_data %>%
     cluster == 1 ~ "Core",
     cluster == 3  ~ "Periphery",
     cluster == 2 ~ "Southern Europe",
-    TRUE ~ as.character(cluster)  # Handle any other cluster values
+    TRUE ~ as.character(cluster)
   ))
 
-k_cluster_gdpc <- bind_rows(ext_00, ext_11, ext_21) %>% 
+'k_cluster_gdpc <- bind_rows(ext_00, ext_11, ext_21) %>% 
   select(-cluster) %>%
-  arrange(year)
+  arrange(year)'
 
-ggplot(k_cluster_gdpc, aes(x = cluster_label, y = k_gdp_capita, fill = factor(year))) +
-  geom_bar(stat = "identity", position = "dodge") +
-  labs(title = "GDP per Capita by Cluster",
+ggplot(ext_21, aes(x = reorder(cluster_label, k_gdp_capita), y = k_gdp_capita)) +
+  geom_bar(stat = "identity", position = "dodge", fill = "blue") +
+  labs(title = "GDP per Capita by Cluster in 2022",
        x = "Cluster",
-       y = "GDP per Capita",
-       fill = "Year") +
-  scale_fill_manual(values = c("2000" = "lightblue", "2011" = "lightgreen", "2021" = "lightcoral")) +
+       y = "GDP per Capita") +
   theme_minimal()

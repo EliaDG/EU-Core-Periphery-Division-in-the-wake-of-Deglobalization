@@ -9,10 +9,3 @@ na.share <- function(df) {
   result <- data.frame(Share_NAs = missing_percentage)
   return(result)
 }
-
-drop_na_columns <- function(df, threshold = 0.25) {
-  na_threshold <- nrow(df) * threshold
-  columns_to_drop <- names(df)[colSums(is.na(df)) > na_threshold]
-  data_clean <- df[, !(names(df) %in% columns_to_drop)]
-  return(data_clean)
-}

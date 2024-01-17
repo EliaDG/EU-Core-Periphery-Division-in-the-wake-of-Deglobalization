@@ -1,10 +1,4 @@
 
-# INFO ----
-
-# TODO: 
-  #have a look at forward/backward fill method or interpolation (zoo package)
-  #in case: iterative imputations (mice package)
-
 # HEADER ----
 
 # Preparation of macro European data - national level
@@ -253,7 +247,7 @@ length(unique_countries)
 macro_data <- macro_data %>%
   select(-net_gerd, -elect, -anrc_hicp, -net_pens, -ass_emp_pp)
 
-## MISSING OBSERVATIONS ----
+# MISSING OBSERVATIONS ----
 macro_data_clean <- drop_na_columns(macro_data, 0.23)
 na.share(macro_data_clean)
 
