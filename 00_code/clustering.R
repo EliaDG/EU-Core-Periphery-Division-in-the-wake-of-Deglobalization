@@ -97,6 +97,9 @@ df2a$kcluster <- kclusters00
 fviz_cluster(kmean00, data = df2a, labelsize = 18,palette = c("red", "green")) + ggtitle("K Mean clustering 2000")
 #kruskal.test(unemp ~ kcluster, data = df2a)
 
+pr.out <- prcomp(df1a, scale = TRUE)
+fviz_contrib(pr.out , choice="var", axes = 1 )
+
 df2a$Region <- ifelse(df2a$kcluster == 2, "Core", "Periphery")
 ggRadar(df2a[,-12], aes(color = Region), rescale = FALSE) + 
   ggtitle("K Means Centers 2000") +
@@ -117,6 +120,9 @@ df2b = eu_2011
 kmean11 <- kmeans(df1b, centers = 3, nstart = 50); kclusters11 <- kmean11$cluster
 df2b$kcluster <- kclusters11
 fviz_cluster(kmean11, data = df2b, labelsize = 18, palette = c("green", "blue", "red")) + ggtitle("K Mean clustering 2011")
+
+pr.out <- prcomp(df1b, scale = TRUE)
+fviz_contrib(pr.out , choice="var", axes = 1 )
 
 df2b$Region <- ifelse(df2b$kcluster == 2, "PIIGS", 
                      ifelse(df2b$kcluster == 1, "Core", 
@@ -140,6 +146,9 @@ df2c = eu_2021
 kmean21 <- kmeans(df1c, centers = 3, nstart = 50); kclusters21 <- kmean21$cluster
 df2c$kcluster <- kclusters21
 fviz_cluster(kmean21, data = df2c, labelsize = 18, palette = c("green","blue", "red")) + ggtitle("K Mean clustering 2021")
+
+pr.out <- prcomp(df1c, scale = TRUE)
+fviz_contrib(pr.out , choice="var", axes = 1 )
 
 df2c$Region <- ifelse(df2c$kcluster == 2, "Southern Europe", 
                      ifelse(df2c$kcluster == 3, "Periphery", 
@@ -208,7 +217,7 @@ ext_21 <- eu_data %>%
   arrange(year)'
 
 ggplot(ext_21, aes(x = reorder(cluster_label, k_gdp_capita), y = k_gdp_capita)) +
-  geom_bar(stat = "identity", position = "dodge", fill = "blue") +
+  geom_bar(stat = "identity", position = "dodge", fill = c("green", "blue", "red")) +
   labs(title = "GDP per Capita by Cluster in 2022",
        x = "Cluster",
        y = "GDP per Capita") +
