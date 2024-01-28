@@ -19,5 +19,6 @@ p_load("readxl",
        "NbClust",
        "ggiraph",
        "ggiraphExtra",
-       "doBy"
+       "doBy",
+       "clustertend"
        )

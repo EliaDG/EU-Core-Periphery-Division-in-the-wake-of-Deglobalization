@@ -3,6 +3,9 @@
 
 # Preparation of macro European data - national level
 
+#Disclaimer: we have more data sets than we ended up using, 
+#due to some corrections of the project direction as we were working on it
+
 ## SOURCING ----
 getwd()
 
